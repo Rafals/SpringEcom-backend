@@ -5,6 +5,7 @@ public record OrderResponse(
     String customerName,
     String email,
     String status,
+    java.time.LocalDate orderDate,
     java.util.List<OrderItemResponse> items
 ) {
 }

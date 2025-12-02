@@ -1,7 +1,7 @@
 package org.example.springecom.model.dto;
 
 public record OrderRequest(
-    String name,
+    String customerName,
     String email,
     java.util.List<OrderItemRequest> items
 ) {
