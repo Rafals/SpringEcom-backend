@@ -6,14 +6,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "users") // <--- Zmień nazwę tabeli na "users"
+@Table(name = "users")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Sugestia: dodaj automatyczne generowanie ID
-    private long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private String username;
     private String password;
