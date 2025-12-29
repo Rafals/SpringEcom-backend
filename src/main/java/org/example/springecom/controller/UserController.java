@@ -19,12 +19,21 @@ public class UserController {
 
     @PostMapping("/auth/login")
     public ResponseEntity<?> login(@RequestBody User user) {
-        boolean isAuthenticated = userService.login(user.getEmail(), user.getPassword());
+        try {
+            // Pobieramy pełne dane użytkownika z bazy, aby znać jego rolę i username
+            User foundUser = userService.getUserByEmail(user.getEmail());
+            String token = userService.login(user.getEmail(), user.getPassword());
 
-        if (isAuthenticated) {
-            System.out.println("Login success: " + user.getEmail());
-            return new ResponseEntity<>(Map.of("message", "Login successful"), HttpStatus.OK);
-        } else {
+            System.out.println("Login success: " + foundUser.getUsername());
+
+            // Zwracamy obiekt z tokenem, nazwą i rolą
+            return new ResponseEntity<>(Map.of(
+                    "token", token,
+                    "username", foundUser.getUsername(),
+                    "role", foundUser.getRole() // np. "ROLE_ADMIN" lub "ROLE_USER"
+            ), HttpStatus.OK);
+
+        } catch (RuntimeException e) {
             return new ResponseEntity<>(Map.of("message", "Invalid credentials"), HttpStatus.UNAUTHORIZED);
         }
     }
