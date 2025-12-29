@@ -19,4 +19,30 @@ public class JwtUtils {
                 .signWith(Keys.hmacShaKeyFor(secret.getBytes()), SignatureAlgorithm.HS256)
                 .compact();
     }
+
+    public String getEmailFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
+                    .build()
+                    .parseClaimsJws(token);
+            return true;
+        } catch (io.jsonwebtoken.security.SignatureException e) {
+            System.out.println("JWT Error: Invalid signature - " + e.getMessage());
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            System.out.println("JWT Error: Token expired - " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("JWT Error: " + e.getMessage());
+        }
+        return false;
+    }
 }
