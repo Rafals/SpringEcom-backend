@@ -1,6 +1,7 @@
 package org.example.springecom.controller;
 
 import org.example.springecom.model.User;
+import org.example.springecom.service.RecaptchaService;
 import org.example.springecom.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,22 +18,27 @@ public class UserController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    RecaptchaService recaptchaService;
+
     @PostMapping("/auth/login")
-    public ResponseEntity<?> login(@RequestBody User user) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest) {
+        String email = loginRequest.get("email");
+        String password = loginRequest.get("password");
+        String captchaToken = loginRequest.get("captchaToken");
+
+        if (captchaToken == null || !recaptchaService.verifyToken(captchaToken)) {
+            return new ResponseEntity<>(Map.of("message", "Invalid Captcha"), HttpStatus.BAD_REQUEST);
+        }
+
         try {
-            // Pobieramy pełne dane użytkownika z bazy, aby znać jego rolę i username
-            User foundUser = userService.getUserByEmail(user.getEmail());
-            String token = userService.login(user.getEmail(), user.getPassword());
-
-            System.out.println("Login success: " + foundUser.getUsername());
-
-            // Zwracamy obiekt z tokenem, nazwą i rolą
-            return new ResponseEntity<>(Map.of(
+            User foundUser = userService.getUserByEmail(email);
+            String token = userService.login(email, password);
+            return ResponseEntity.ok(Map.of(
                     "token", token,
                     "username", foundUser.getUsername(),
-                    "role", foundUser.getRole() // np. "ROLE_ADMIN" lub "ROLE_USER"
-            ), HttpStatus.OK);
-
+                    "role", foundUser.getRole()
+            ));
         } catch (RuntimeException e) {
             return new ResponseEntity<>(Map.of("message", "Invalid credentials"), HttpStatus.UNAUTHORIZED);
         }
