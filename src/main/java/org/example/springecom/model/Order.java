@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -21,17 +22,24 @@ public class Order {
     @Column(unique = true)
     private String orderId;
 
-    // POWIĄZANIE Z UŻYTKOWNIKIEM - tego szukał Spring
     @ManyToOne
     @JoinColumn(name = "user_id")
     @JsonIgnore
     private User user;
 
     private String customerName;
-    private String email; // Możesz zostawić dla czytelności, ale 'user' jest kluczowy
+    private String email;
     private String status;
     private LocalDate orderDate;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems;
+
+    private String firstName;
+    private String lastName;
+    private String street;
+    private String city;
+    private String zipCode;
+    private String shippingMethod;
+    private BigDecimal totalAmount;
 }

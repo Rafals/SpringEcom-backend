@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.springecom.security.AuthProvider;
 
 @Entity
 @Table(name = "users")
@@ -19,4 +20,7 @@ public class User {
     private String password;
     private String email;
     private String role;
+
+    @Enumerated(EnumType.STRING)
+    private AuthProvider authProvider;
 }

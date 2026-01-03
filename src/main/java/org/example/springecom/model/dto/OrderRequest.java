@@ -1,8 +1,14 @@
 package org.example.springecom.model.dto;
 
+import java.math.BigDecimal;
+
 public record OrderRequest(
-    String customerName,
-    String email,
-    java.util.List<OrderItemRequest> items
+        String firstName,
+        String lastName,
+        String street,
+        String city,
+        String zipCode,
+        String shippingMethod,
+        BigDecimal totalAmount
 ) {
 }

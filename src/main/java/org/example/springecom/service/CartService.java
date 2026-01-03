@@ -34,15 +34,12 @@ public class CartService {
         Product product = productRepo.findById(Math.toIntExact(productId))
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        // Sprawdzamy, czy produkt już jest w koszyku tego użytkownika
         cartRepo.findByUserAndProduct(user, product).ifPresentOrElse(
                 item -> {
-                    // Jeśli jest, zwiększamy ilość
                     item.setQuantity(item.getQuantity() + quantity);
                     cartRepo.save(item);
                 },
                 () -> {
-                    // Jeśli nie ma, tworzymy nową pozycję
                     CartItem newItem = new CartItem();
                     newItem.setUser(user);
                     newItem.setProduct(product);
@@ -67,4 +64,6 @@ public class CartService {
         User user = userService.getUserByEmail(email);
         cartRepo.deleteByUser(user);
     }
+
+
 }

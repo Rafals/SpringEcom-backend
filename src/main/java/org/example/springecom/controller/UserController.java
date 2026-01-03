@@ -1,6 +1,8 @@
 package org.example.springecom.controller;
 
 import org.example.springecom.model.User;
+import org.example.springecom.security.JwtUtils;
+import org.example.springecom.service.GoogleAuthService;
 import org.example.springecom.service.RecaptchaService;
 import org.example.springecom.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +17,10 @@ import java.util.Map;
 @CrossOrigin
 public class UserController {
 
-    @Autowired
-    UserService userService;
-
-    @Autowired
-    RecaptchaService recaptchaService;
+    @Autowired UserService userService;
+    @Autowired RecaptchaService recaptchaService;
+    @Autowired GoogleAuthService googleAuthService;
+    @Autowired JwtUtils jwtUtils;
 
     @PostMapping("/auth/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest) {
@@ -57,6 +58,20 @@ public class UserController {
         } catch (Exception e) {
             return new ResponseEntity<>(Map.of("message", "Registration failed: " + e.getMessage()), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @PostMapping("/auth/google")
+    public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> request) {
+        String idToken = request.get("token");
+        String jwtToken = googleAuthService.authenticateGoogleUser(idToken);
+
+        User user = userService.getUserByEmail(jwtUtils.extractUsername(jwtToken));
+
+        return ResponseEntity.ok(Map.of(
+                "token", jwtToken,
+                "username", user.getUsername(),
+                "role", user.getRole()
+        ));
     }
 
 }

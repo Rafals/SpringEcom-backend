@@ -1,9 +1,6 @@
 package org.example.springecom.service;
 
-import org.example.springecom.model.Order;
-import org.example.springecom.model.OrderItem;
-import org.example.springecom.model.Product;
-import org.example.springecom.model.User;
+import org.example.springecom.model.*;
 import org.example.springecom.model.dto.OrderItemRequest;
 import org.example.springecom.model.dto.OrderItemResponse;
 import org.example.springecom.model.dto.OrderRequest;
@@ -12,6 +9,7 @@ import org.example.springecom.repo.OrderRepo;
 import org.example.springecom.repo.ProductRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -22,38 +20,40 @@ import java.util.UUID;
 @Service
 public class OrderService {
 
-    @Autowired
-    private ProductRepo productRepo;
-    @Autowired
-    private OrderRepo orderRepo;
-    @Autowired
-    private UserService userService;
+    @Autowired private ProductRepo productRepo;
+    @Autowired private OrderRepo orderRepo;
+    @Autowired private UserService userService;
+    @Autowired private CartService cartService;
 
-    // Dodano parametr email, aby powiązać zamówienie z użytkownikiem
+    @Transactional
     public OrderResponse placeOrder(OrderRequest request, String email) {
         User user = userService.getUserByEmail(email);
 
+        List<CartItem> cartItems = cartService.getCartByUser(email);
+        if (cartItems.isEmpty()) throw new RuntimeException("Cart is empty");
+
         Order order = new Order();
-        String orderId = "ORD " + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        order.setOrderId(orderId);
-        order.setUser(user); // PRZYPISANIE UŻYTKOWNIKA
-        order.setCustomerName(request.customerName());
-        order.setEmail(request.email());
-        order.setStatus("PLACED");
+        order.setOrderId("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        order.setUser(user);
+        order.setCustomerName(request.firstName() + " " + request.lastName());
+        order.setEmail(email);
+        order.setStatus("PAID");
         order.setOrderDate(LocalDate.now());
 
         List<OrderItem> orderItems = new ArrayList<>();
-        for(OrderItemRequest itemReq : request.items()) {
-            Product product = productRepo.findById(itemReq.productId())
-                    .orElseThrow(() -> new RuntimeException("Product Not Found"));
+        for (CartItem cartItem : cartItems) {
+            Product product = cartItem.getProduct();
 
-            product.setStockQuantity(product.getStockQuantity() - itemReq.quantity());
+            if (product.getStockQuantity() < cartItem.getQuantity()) {
+                throw new RuntimeException("Not enough stock for: " + product.getName());
+            }
+            product.setStockQuantity(product.getStockQuantity() - cartItem.getQuantity());
             productRepo.save(product);
 
             OrderItem orderItem = OrderItem.builder()
                     .product(product)
-                    .quantity(itemReq.quantity())
-                    .totalPrice(product.getPrice().multiply(BigDecimal.valueOf(itemReq.quantity())))
+                    .quantity(cartItem.getQuantity())
+                    .totalPrice(product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())))
                     .order(order)
                     .build();
             orderItems.add(orderItem);
@@ -61,10 +61,12 @@ public class OrderService {
 
         order.setOrderItems(orderItems);
         Order savedOrder = orderRepo.save(order);
+
+        cartService.clearUserCart(email);
+
         return convertToResponse(savedOrder);
     }
 
-    // Nowa logika: Admin widzi wszystko, User tylko swoje
     public List<OrderResponse> getAllOrderResponses(String email) {
         User user = userService.getUserByEmail(email);
         List<Order> orders;
@@ -82,7 +84,6 @@ public class OrderService {
         return orderResponses;
     }
 
-    // Helper, żeby nie powtarzać kodu konwersji
     private OrderResponse convertToResponse(Order order) {
         List<OrderItemResponse> itemResponses = new ArrayList<>();
         for(OrderItem item : order.getOrderItems()) {

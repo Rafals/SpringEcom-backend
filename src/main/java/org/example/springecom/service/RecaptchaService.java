@@ -1,5 +1,6 @@
 package org.example.springecom.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -8,7 +9,8 @@ import java.util.Map;
 @Service
 public class RecaptchaService {
 
-    private final String SECRET_KEY = "secret_key_here";
+    @Value("${app.recaptcha.secret-key}")
+    private String SECRET_KEY;
     private final String VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify";
 
     public boolean verifyToken(String token) {
