@@ -14,6 +14,20 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "is_enabled")
+    private boolean isEnabled = false;
+
+    @Column(name = "verification_code")
+    private String verificationCode;
+
+    @Column(name = "pending_email")
+    private String pendingEmail;
+
+    @Column(name = "reset_token")
+    private String resetToken;
+
+    @Column(name = "reset_token_expiration")
+    private LocalDateTime resetTokenExpiration;
 
     private String username;
     private String email;

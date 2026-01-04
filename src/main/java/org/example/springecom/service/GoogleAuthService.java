@@ -69,10 +69,12 @@ public class GoogleAuthService {
             if (user == null) {
                 user = new User();
                 user.setEmail(email);
-                user.setUsername(email);
+                // ... reszta pól ...
                 user.setRole("ROLE_USER");
                 user.setAuthProvider(AuthProvider.GOOGLE);
-                user.setPassword("");
+
+                user.setEnabled(true); // <--- WAŻNE: Google user jest od razu aktywny!
+
                 userRepo.save(user);
             }
 

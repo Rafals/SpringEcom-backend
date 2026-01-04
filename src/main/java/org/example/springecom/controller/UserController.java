@@ -115,4 +115,68 @@ public class UserController {
         userService.unbanUser(id);
         return ResponseEntity.ok(Map.of("message", "User unbanned successfully"));
     }
+
+    @PostMapping("/auth/verify")
+    public ResponseEntity<?> verifyAccount(@RequestBody Map<String, String> request) {
+        try {
+            userService.verifyUser(request.get("email"), request.get("code"));
+            return ResponseEntity.ok(Map.of("message", "Account verified successfully"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/user/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> request, Authentication auth) {
+        try {
+            userService.changePassword(auth.getName(), request.get("oldPassword"), request.get("newPassword"));
+            return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/user/change-email-request")
+    public ResponseEntity<?> requestEmailChange(@RequestBody Map<String, String> request, Authentication auth) {
+        try {
+            userService.requestEmailChange(auth.getName(), request.get("newEmail"));
+            return ResponseEntity.ok(Map.of("message", "Verification code sent to new email"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/user/change-email-verify")
+    public ResponseEntity<?> verifyEmailChange(@RequestBody Map<String, String> request, Authentication auth) {
+        try {
+            Map<String, Object> newAuthData = userService.confirmEmailChange(auth.getName(), request.get("code"));
+            return ResponseEntity.ok(newAuthData); // Zwracamy NOWY TOKEN!
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/auth/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+        try {
+            userService.forgotPassword(request.get("email"));
+            return ResponseEntity.ok(Map.of("message", "Reset code sent to email"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/auth/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        try {
+            userService.resetPassword(
+                    request.get("email"),
+                    request.get("code"),
+                    request.get("newPassword")
+            );
+            return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
 }
