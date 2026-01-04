@@ -1,26 +1,31 @@
 package org.example.springecom.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.example.springecom.security.AuthProvider;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Table(name = "users")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
     private String username;
-    private String password;
     private String email;
+    private String password;
     private String role;
 
     @Enumerated(EnumType.STRING)
     private AuthProvider authProvider;
+
+    // --- NOWE POLA DO BANOWANIA ---
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean isBanned = false; // Czy zablokowany
+    private LocalDateTime banExpiration; // Do kiedy (null = na zawsze)
+    private String banReason; // Dlaczego
 }

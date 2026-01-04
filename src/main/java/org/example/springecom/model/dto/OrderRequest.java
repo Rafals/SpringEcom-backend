@@ -9,6 +9,7 @@ public record OrderRequest(
         String city,
         String zipCode,
         String shippingMethod,
-        BigDecimal totalAmount
+        BigDecimal totalAmount,
+        String couponCode
 ) {
 }

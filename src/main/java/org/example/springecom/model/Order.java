@@ -42,4 +42,7 @@ public class Order {
     private String zipCode;
     private String shippingMethod;
     private BigDecimal totalAmount;
+
+    private String couponCode;
+    private BigDecimal discountAmount;
 }
