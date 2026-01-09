@@ -10,7 +10,7 @@
 ## 🌐 Live Demo
 Check out the live application here: **[https://r6customs.pl](https://r6customs.pl)**
 
-> **Note:** The application is hosted on a private self-managed VPS. Availability may be limited during late night hours (CET).
+> **Note:** The application is hosted on a private self-managed VPS. The page automatically turns on from 7 to 23 (UTC +2).
 
 ---
 
